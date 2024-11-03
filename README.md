@@ -30,6 +30,22 @@ EDA involved exploring the layoff data to answer key questions, including:
 - What is the top 5 `country` has the most layoff?
 
 
+### Results/Findings:
+
+1. `COMPANY`
+  ![Screenshot 2024-11-03 143141](https://github.com/user-attachments/assets/ad9bc9f6-86f3-468a-a8ac-88d67f31ac5a)
+
+
+
+  
+3. `INDUSTRY` 
+   ![Screenshot 2024-11-03 143256](https://github.com/user-attachments/assets/bf388da2-7b08-41fd-83d9-87581432f8be)
+
+
+   
+4.  `COUNTRY`
+  ![Screenshot 2024-11-03 143616](https://github.com/user-attachments/assets/c63582b9-10ab-4c06-88df-ec6bbef682a5)
+
 
 
 
