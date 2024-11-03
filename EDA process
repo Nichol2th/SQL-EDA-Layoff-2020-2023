@@ -1,0 +1,109 @@
+-- Exploratory D.A 
+
+SELECT *
+FROM layoffs_staging2;
+
+-- exploratory data
+SELECT Max(total_laid_off), Max(percentage_laid_off)
+FROM layoffs_staging2;
+
+SELECT *
+FROM layoffs_staging2
+WHERE percentage_laid_off = 1
+ORDER BY funds_raised_millions desc;
+
+
+-- range time from 2020/03 = 2023/03
+SELECT Min(`date`), max(`date`)
+FROM layoffs_staging2;
+
+
+-- total laid off by country in the range
+
+SELECT country, year(`date`) as years,
+sum(total_laid_off)
+FROM layoffs_staging2
+WHERE year(`date`) is not null
+GROUP BY country, year(`date`)
+ORDER BY year(`date`), sum(total_laid_off);
+
+
+-- total laid off by industry in the range
+
+SELECT industry, year(`date`) as years, 
+sum(total_laid_off) as total_sum
+FROM layoffs_staging2
+GROUP BY years, industry
+ORDER BY 2;
+
+
+-- The precentage laid off by industry in the range 
+
+SELECT industry, year(`date`) as years,
+sum(percentage_laid_off) as total_percentage
+FROM layoffs_staging2
+GROUP BY industry, year(`date`)
+ORDER BY year(`date`), total_percentage;
+
+
+-- cte1, cte2 to create the table ranking the total laid of by company  
+
+-- create table
+CREATE TABLE new_company_year_rank 
+(
+    company VARCHAR(255),  
+    years INT,
+    total_laid_off INT,
+    Ranking INT
+);
+
+-- insert data in table new_company_year_rank
+
+INSERT INTO 
+new_company_year_rank(Company, years, total_laid_off, Ranking) 
+WITH Company_Year (Company, years, total_laid_off) AS 
+( Select company, year(`date`), SUM(total_laid_off) 
+FROM layoffs_staging2 Group by company, year(`date`) ) ,
+Company_Year_Rank AS 
+(Select *, dense_rank() OVER(partition by years ORDER BY  total_laid_off DESC) AS Ranking 
+FROM Company_year Where years is not null  ) 
+SELECT company, years, total_laid_off, Ranking 
+FROM Company_Year_Rank;
+
+
+SELECT * FROM new_company_year_rank;
+
+
+-- cte1, cte2 to create the table ranking the total laid of by industry
+-- create table industry
+
+CREATE TABLE new_industry_year_rank 
+(
+    industry VARCHAR(255),  
+    years INT,
+    total_laid_off INT,
+    Ranking INT
+);
+
+-- Insert data to the table. 
+
+INSERT INTO 
+new_industry_year_rank(industry, years, total_laid_off, Ranking)
+WITH Industry_Year (industry, years, total_laid_off) AS
+(Select industry, year(`date`), SUM(total_laid_off)
+FROM layoffs_staging2
+GROUP BY industry, year(`date`))
+,Industry_Year_Rank AS
+(Select *, dense_rank() OVER(partition by years ORDER BY 
+total_laid_off DESC) AS Ranking
+FROM Industry_Year
+WHERE years is not null )
+SELECT industry, years, total_laid_off, Ranking 
+FROM Industry_Year_Rank;
+
+
+SELECT * FROM new_industry_Year_Rank;
+
+
+
+
