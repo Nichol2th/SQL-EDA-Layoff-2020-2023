@@ -8,7 +8,8 @@ This data analysi project aim to provide insights into the layoff raw data over 
 
 ### Data Source
 
-Layoffs data: the data range start from 03/2020 - 03/2023, the time after covid pandamic happened. This inlcuding company, their location, industry, country, total laid off and the pecentage of its. 
+Layoffs data: the data range start from 03/2020 - 03/2023, the time after covid pandamic happened. [layoffs.csv](https://github.com/Nichol2th/SQL-EDA-Layoff-2020-2023/blob/main/layoffs.csv) file inlcuding company, their location, industry, country, total laid off and the pecentage of its. 
+
 
 ### Data Cleaning/ Preparation
 
