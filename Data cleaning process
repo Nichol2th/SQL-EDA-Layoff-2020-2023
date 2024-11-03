@@ -1,0 +1,153 @@
+Data cleaning
+Create another table from raw data before cleaning
+
+1. Remove Duplicates
+2. Standardize the data (spelling ,etc)
+3. Null Values or blank values
+4. Remove extra columns or format.
+
+
+-- Create new table
+
+CREATE TABLE layoffs_staging
+like layoffs;
+
+INSERT layoffs_staging
+SELECT * from layoffs;
+
+
+-- Create row number to remove duplicate values
+
+SELECT *,
+ROW_NUMBER () OVER( partition by
+company, location, industry, 
+total_laid_off, percentage_laid_off, 
+`date`, stage, country) AS row_num
+FROM world_layoffs.layoffs_staging;
+
+
+-- CREATE new table insert the row_num to remove duplicate.
+
+CREATE TABLE `layoffs_staging2` (
+  `company` text,
+  `location` text,
+  `industry` text,
+  `total_laid_off` int DEFAULT NULL,
+  `percentage_laid_off` text,
+  `date` text,
+  `stage` text,
+  `country` text,
+  `funds_raised_millions` int DEFAULT NULL,
+  `row_num` INT 
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+INSERT INTO layoffs_staging2
+SELECT *,
+ROW_NUMBER () OVER( partition by
+company, location, industry, 
+total_laid_off, percentage_laid_off, 
+`date`, stage, country) AS row_num
+FROM world_layoffs.layoffs_staging;
+
+
+-- Identify row_num >1 first then use delete from. 
+
+SELECT * FROM layoffs_staging2
+WHERE row_num > 1;
+
+DELETE FROM layoffs_staging2
+WHERE row_num > 1;
+
+
+-- Standardizing data
+
+-- Company 
+
+SELECT company
+FROM layoffs_staging2;
+
+UPDATE layoffs_staging2
+SET company = TRIM(company);
+
+-- Industry
+SELECT *
+FROM layoffs_staging2
+WHERE industry like 'Crypto%';
+
+SELECT distinct industry
+FROM layoffs_staging2
+ORDER BY 1;
+
+UPDATE layoffs_staging2
+SET industry = 'Crypto'
+WHERE industry LIKE 'Crypto%';
+
+-- Country
+
+SELECT distinct country, trim(TRAILING '.' FROM country)
+FROM layoffs_staging2
+ORDER BY 1;
+
+UPDATE layoffs_staging2
+SET country = trim(TRAILING '.' FROM country)
+WHERE country LIKE 'United States%';
+
+-- Change data type, date
+
+SELECT `date`
+FROM layoffs_staging2;
+
+UPDATE layoffs_staging2
+SET `date` = str_to_date(`date`, '%m/%d/%Y');
+
+ALTER TABLE layoffs_staging2
+MODIFY column `date` DATE;
+
+
+-- Null values / blank values.
+
+SELECT *
+FROM layoffs_staging2
+WHERE industry IS NULL
+or industry = '';
+
+SELECT *
+FROM layoffs_staging2
+WHERE company LIKE 'Bally%';
+
+-- Join table to set the same industry for null values
+
+UPDATE layoffs_staging2
+SET industry = NULL
+where industry = '';
+
+
+Select t1.industry, t2.industry
+FROM layoffs_staging2 t1
+JOIN layoffs_staging2 t2
+ON t1.company = t2.company 
+WHERE (t1.industry is null or t1.industry = '')
+and t2.industry is not null ;
+
+
+UPDATE layoffs_staging2 t1
+JOIN layoffs_staging2 t2
+ON t1.company = t2.company 
+SET t1.industry = t2.industry
+WHERE t1.industry is null 
+and t2.industry is not null ;
+
+-- Delete null values that can not give any value from the table.
+
+DELETE FROM layoffs_staging2
+WHERE total_laid_off IS NULL
+AND percentage_laid_off IS NULL;
+
+-- 
+Select * from layoffs_staging2;
+
+ALTER TABLE layoffs_staging2
+DROP column row_num; 
+
+-- Cleaned data. Done
