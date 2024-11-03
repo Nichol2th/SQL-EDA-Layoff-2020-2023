@@ -105,5 +105,32 @@ FROM Industry_Year_Rank;
 SELECT * FROM new_industry_Year_Rank;
 
 
+-- cte1, cte2 to create the table ranking the total laid of by country
+-- create table country
 
+CREATE TABLE new_country_year_rank 
+(
+    country VARCHAR(255),  
+    years INT,
+    total_laid_off INT,
+    Ranking INT
+);
 
+-- Insert data to the table. 
+
+INSERT INTO 
+new_country_year_rank(country, years, total_laid_off, Ranking)
+WITH Country_Year (country, years, total_laid_off) AS
+(Select country, year(`date`), SUM(total_laid_off)
+FROM layoffs_staging2
+Group by country, year(`date`))
+,Country_Year_Rank AS
+(Select *, dense_rank() OVER(partition by years ORDER BY 
+total_laid_off DESC) AS Ranking
+from Country_Year
+Where years is not null )
+SELECT country, years, total_laid_off, Ranking 
+FROM Country_Year_Rank
+;
+
+SELECT * FROM new_country_Year_Rank;
